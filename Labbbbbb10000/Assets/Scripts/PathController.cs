@@ -78,6 +78,7 @@ public class PathController : MonoBehaviour
     private void OnTriggerEnter(Collider other)
     {
         target = pathManager.GetNextTarget();
+        isWalking = !isWalking;
     }
 
 
