@@ -5,7 +5,9 @@ using UnityEngine;
 public class PathController : MonoBehaviour
 {
     [SerializeField]
+    public bool isMenu = false;
     public PathManager pathManager;
+    public MenuState menuState;
 
     List<Waypoint> thePath;
     Waypoint target;
@@ -14,20 +16,23 @@ public class PathController : MonoBehaviour
     public float RotateSpeed;
 
     public List<Animator> animator;
-    public bool isWalking = false;
+    public bool isWalking = true;
 
     void Start()
     {
-        for (int i= 0; i<this.transform.childCount; i++)
+        if (!isMenu)
         {
-            if (transform.GetChild(i).GetComponent<Animator>() != null)
+            for (int i = 0; i < this.transform.childCount; i++)
             {
-                animator.Add(transform.GetChild(i).GetComponent<Animator>());
+                if (transform.GetChild(i).GetComponent<Animator>() != null)
+                {
+                    animator.Add(transform.GetChild(i).GetComponent<Animator>());
+                }
             }
-        }
-        foreach (Animator anim in animator)
-        {
-            anim.SetBool("isWalking", isWalking);
+            foreach (Animator anim in animator)
+            {
+                anim.SetBool("isWalking", isWalking);
+            }
         }
 
         thePath = pathManager.GetPath();
@@ -39,11 +44,23 @@ public class PathController : MonoBehaviour
 
     void rotateTowardsTarget() 
     { 
+
         float stepSize = RotateSpeed* Time.deltaTime;
-        
-        Vector3 targetDir = target.pos-transform.position;
-        Vector3 newDir = Vector3.RotateTowards(transform.forward, targetDir, stepSize, 0.0f);
-        transform.rotation = Quaternion.LookRotation(newDir);
+        Vector3 targetDir;
+        Quaternion targetDirr;
+        if (isMenu)
+        {
+            targetDirr = Quaternion.LookRotation(pathManager.GetMenuStateLookTarget().transform.position-target.pos);
+            transform.rotation = Quaternion.Lerp(transform.rotation, targetDirr, stepSize);
+        }
+        else
+        {
+            targetDir = target.pos - transform.position;
+            Vector3 newDir = Vector3.RotateTowards(transform.forward, targetDir, stepSize, 0.0f);
+        }
+            
+            
+
     }
     void moveForward() 
     { 
@@ -53,20 +70,32 @@ public class PathController : MonoBehaviour
         {
             return;
         }
-        Vector3 moveDir = Vector3.forward;
-        transform.Translate(moveDir * stepSize);
+        Vector3 moveDir = target.pos-transform.position;
+        transform.position+=(moveDir * stepSize);
     }
 
     void Update()
     {
-        if (Input.anyKeyDown)
+        if (!isMenu)
+        {
+            if (Input.anyKeyDown)
         {
             isWalking = !isWalking;
 
         }
-        foreach (Animator anim in animator)
+        
+            foreach (Animator anim in animator)
+            {
+                anim.SetBool("isWalking", isWalking);
+            }
+        }
+        else
         {
-            anim.SetBool("isWalking", isWalking);
+            if (target != pathManager.GetMenuStateTarget())
+            {
+                Debug.Log("WAAAAAAAAAAA");
+                target = pathManager.GetMenuStateTarget();
+            }
         }
         if (isWalking)
         {
@@ -75,11 +104,14 @@ public class PathController : MonoBehaviour
         }
     }
 
-    private void OnTriggerEnter(Collider other)
+ /*   private void OnTriggerEnter(Collider other)
     {
-        target = pathManager.GetNextTarget();
-        isWalking = !isWalking;
-    }
+        if (!isMenu)
+        {
+            target = pathManager.GetNextTarget();
+            isWalking = !isWalking;
+        }
+    }*/
 
 
 }
