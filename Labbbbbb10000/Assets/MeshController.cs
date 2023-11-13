@@ -46,6 +46,7 @@ public class MeshController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        
         if (isWalking)
         {
             agent.destination = target.transform.position;

@@ -8,6 +8,7 @@ TagManager:
   - Dragib enemy
   - Targetme
   - wall
+  - Squish
   layers:
   - Default
   - TransparentFX
